@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from rest_api.routers import health, tasks
+from rest_api.routers import health, redis_debug
 
 app = FastAPI(
     title="API",
@@ -18,7 +18,7 @@ app.add_middleware(
 )
 
 app.include_router(health.router)
-app.include_router(tasks.router)
+app.include_router(redis_debug.router)
 
 
 @app.get("/")

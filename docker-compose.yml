@@ -53,10 +53,6 @@ services:
       - NEXT_PUBLIC_API_URL=http://localhost:8000
     depends_on:
       - backend-rest
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
-      - /app/.next
     restart: unless-stopped
 
 volumes:

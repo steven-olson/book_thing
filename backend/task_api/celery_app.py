@@ -18,4 +18,5 @@ celery_app.conf.update(
     worker_prefetch_multiplier=settings.celery.worker_prefetch_multiplier,
 )
 
-celery_app.autodiscover_tasks(["task_api.tasks"])
+# Import tasks to register them with celery
+import task_api.tasks  # noqa: F401
