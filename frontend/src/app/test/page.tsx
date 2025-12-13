@@ -1,44 +1,27 @@
 "use client";
 
 import { useState } from "react";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+import {
+  useHealthCheckHealthGet,
+  useTriggerHelloTaskTasksHelloPost,
+} from "@/api";
 
 export default function TestPage() {
-  const [healthStatus, setHealthStatus] = useState<string | null>(null);
-  const [taskResult, setTaskResult] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [taskName, setTaskName] = useState("Frontend");
 
-  const checkHealth = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const response = await fetch(`${API_URL}/health`);
-      const data = await response.json();
-      setHealthStatus(JSON.stringify(data, null, 2));
-    } catch (err) {
-      setError(`Health check failed: ${err}`);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const {
+    data: healthData,
+    error: healthError,
+    isLoading: healthLoading,
+    mutate: refetchHealth,
+  } = useHealthCheckHealthGet();
 
-  const triggerTask = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const response = await fetch(`${API_URL}/tasks/hello?name=Frontend`, {
-        method: "POST",
-      });
-      const data = await response.json();
-      setTaskResult(JSON.stringify(data, null, 2));
-    } catch (err) {
-      setError(`Task trigger failed: ${err}`);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const {
+    trigger: triggerTask,
+    data: taskData,
+    error: taskError,
+    isMutating: taskLoading,
+  } = useTriggerHelloTaskTasksHelloPost({ name: taskName });
 
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-black p-8">
@@ -46,61 +29,80 @@ export default function TestPage() {
         <h1 className="text-3xl font-bold text-zinc-900 dark:text-zinc-50">
           Backend Connection Test
         </h1>
+        <p className="text-sm text-zinc-500 dark:text-zinc-400">
+          Using Orval-generated SWR hooks
+        </p>
 
-        <div className="space-y-4">
-          <div className="flex gap-4">
+        <div className="space-y-6">
+          {/* Health Check Section */}
+          <div className="p-4 border border-zinc-200 dark:border-zinc-700 rounded-lg space-y-4">
+            <h2 className="font-semibold text-zinc-900 dark:text-zinc-50">
+              Health Check (GET /health)
+            </h2>
             <button
-              onClick={checkHealth}
-              disabled={loading}
+              onClick={() => refetchHealth()}
+              disabled={healthLoading}
               className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Check Health
+              {healthLoading ? "Loading..." : "Check Health"}
             </button>
-            <button
-              onClick={triggerTask}
-              disabled={loading}
-              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Trigger Task
-            </button>
+
+            {healthError && (
+              <div className="p-3 bg-red-100 dark:bg-red-900/30 border border-red-300 dark:border-red-700 rounded-lg">
+                <p className="text-red-700 dark:text-red-300 text-sm">
+                  Error: {String(healthError)}
+                </p>
+              </div>
+            )}
+
+            {healthData && (
+              <div className="p-3 bg-green-100 dark:bg-green-900/30 rounded-lg">
+                <pre className="text-sm text-zinc-700 dark:text-zinc-300">
+                  {JSON.stringify(healthData, null, 2)}
+                </pre>
+              </div>
+            )}
           </div>
 
-          {loading && (
-            <p className="text-zinc-600 dark:text-zinc-400">Loading...</p>
-          )}
-
-          {error && (
-            <div className="p-4 bg-red-100 dark:bg-red-900/30 border border-red-300 dark:border-red-700 rounded-lg">
-              <p className="text-red-700 dark:text-red-300">{error}</p>
+          {/* Task Trigger Section */}
+          <div className="p-4 border border-zinc-200 dark:border-zinc-700 rounded-lg space-y-4">
+            <h2 className="font-semibold text-zinc-900 dark:text-zinc-50">
+              Trigger Task (POST /tasks/hello)
+            </h2>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={taskName}
+                onChange={(e) => setTaskName(e.target.value)}
+                placeholder="Enter name"
+                className="px-3 py-2 border border-zinc-300 dark:border-zinc-600 rounded-lg bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100"
+              />
+              <button
+                onClick={() => triggerTask()}
+                disabled={taskLoading}
+                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {taskLoading ? "Triggering..." : "Trigger Task"}
+              </button>
             </div>
-          )}
 
-          {healthStatus && (
-            <div className="p-4 bg-zinc-100 dark:bg-zinc-800 rounded-lg">
-              <h2 className="font-semibold text-zinc-900 dark:text-zinc-50 mb-2">
-                Health Response:
-              </h2>
-              <pre className="text-sm text-zinc-700 dark:text-zinc-300">
-                {healthStatus}
-              </pre>
-            </div>
-          )}
+            {taskError && (
+              <div className="p-3 bg-red-100 dark:bg-red-900/30 border border-red-300 dark:border-red-700 rounded-lg">
+                <p className="text-red-700 dark:text-red-300 text-sm">
+                  Error: {String(taskError)}
+                </p>
+              </div>
+            )}
 
-          {taskResult && (
-            <div className="p-4 bg-zinc-100 dark:bg-zinc-800 rounded-lg">
-              <h2 className="font-semibold text-zinc-900 dark:text-zinc-50 mb-2">
-                Task Response:
-              </h2>
-              <pre className="text-sm text-zinc-700 dark:text-zinc-300">
-                {taskResult}
-              </pre>
-            </div>
-          )}
+            {taskData && (
+              <div className="p-3 bg-green-100 dark:bg-green-900/30 rounded-lg">
+                <pre className="text-sm text-zinc-700 dark:text-zinc-300">
+                  {JSON.stringify(taskData, null, 2)}
+                </pre>
+              </div>
+            )}
+          </div>
         </div>
-
-        <p className="text-sm text-zinc-500 dark:text-zinc-400">
-          API URL: {API_URL}
-        </p>
       </div>
     </div>
   );

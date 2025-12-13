@@ -6,12 +6,15 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "generate-api": "orval",
+    "prebuild": "npm run generate-api"
   },
   "dependencies": {
     "next": "16.0.10",
     "react": "19.2.1",
-    "react-dom": "19.2.1"
+    "react-dom": "19.2.1",
+    "swr": "^2.3.7"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
@@ -20,6 +23,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.0.10",
+    "orval": "^7.17.0",
     "tailwindcss": "^4",
     "typescript": "^5"
   }
