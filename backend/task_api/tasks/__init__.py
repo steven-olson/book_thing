@@ -1,3 +1,3 @@
-from task_api.tasks.example import hello_world_task
+from task_api.tasks.debug import hello_world_task
 
 __all__ = ["hello_world_task"]

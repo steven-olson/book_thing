@@ -9,6 +9,15 @@ class RunMode(str, Enum):
     WORKER = "worker"
 
 
+class DynamoDBSettings(BaseSettings):
+    model_config = SettingsConfigDict(env_prefix="DYNAMODB_")
+
+    region_name: str = "us-east-1"
+    endpoint_url: str | None = None  # For local development (e.g., DynamoDB Local)
+    aws_access_key_id: str | None = None
+    aws_secret_access_key: str | None = None
+
+
 class CelerySettings(BaseSettings):
     model_config = SettingsConfigDict(env_prefix="CELERY_")
 
@@ -32,6 +41,7 @@ class Settings(BaseSettings):
     run_mode: RunMode = RunMode.REST
 
     celery: CelerySettings = CelerySettings()
+    dynamodb: DynamoDBSettings = DynamoDBSettings()
 
 
 @lru_cache

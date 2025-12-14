@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 
 from db.redis.redis_utils import get_redis_status, RedisStatus
-from task_api.tasks.example import hello_world_task
+from task_api.tasks.debug import hello_world_task
 
 router = APIRouter(prefix="/tasks", tags=["tasks"])
 
