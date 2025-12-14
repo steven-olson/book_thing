@@ -13,7 +13,12 @@ async def trigger_hello_task(name: str = "World"):
     return {"task_id": result.id, "status": "queued"}
 
 
-@router.get("/stats")
+@router.get(
+    "/stats",
+    operation_id="get_redis_status",
+    response_model=RedisStatus,
+)
 async def get_redis_stats() -> RedisStatus:
     stats = get_redis_status()
+    print(stats)
     return stats

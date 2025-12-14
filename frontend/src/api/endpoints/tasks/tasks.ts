@@ -5,9 +5,11 @@
  * FastAPI Backend
  * OpenAPI spec version: 0.1.0
  */
+import useSwr from 'swr';
 import type {
   Arguments,
-  Key
+  Key,
+  SWRConfiguration
 } from 'swr';
 
 import useSWRMutation from 'swr/mutation';
@@ -17,6 +19,7 @@ import type {
 
 import type {
   HTTPValidationError,
+  RedisStatus,
   TriggerHelloTaskTasksHelloPostParams
 } from '../../models';
 
@@ -103,6 +106,67 @@ export const useTriggerHelloTaskTasksHelloPost = <TError = HTTPValidationError>(
   const swrFn = getTriggerHelloTaskTasksHelloPostMutationFetcher(params, requestOptions);
 
   const query = useSWRMutation(swrKey, swrFn, swrOptions)
+
+  return {
+    swrKey,
+    ...query
+  }
+}
+/**
+ * @summary Get Redis Stats
+ */
+export type getRedisStatusResponse200 = {
+  data: RedisStatus
+  status: 200
+}
+    
+export type getRedisStatusResponseSuccess = (getRedisStatusResponse200) & {
+  headers: Headers;
+};
+;
+
+export type getRedisStatusResponse = (getRedisStatusResponseSuccess)
+
+export const getGetRedisStatusUrl = () => {
+
+
+  
+
+  return `/tasks/stats`
+}
+
+export const getRedisStatus = async ( options?: RequestInit): Promise<getRedisStatusResponse> => {
+  
+  return customFetch<getRedisStatusResponse>(getGetRedisStatusUrl(),
+  {      
+    ...options,
+    method: 'GET'
+    
+    
+  }
+);}
+
+
+
+
+export const getGetRedisStatusKey = () => [`/tasks/stats`] as const;
+
+export type GetRedisStatusQueryResult = NonNullable<Awaited<ReturnType<typeof getRedisStatus>>>
+export type GetRedisStatusQueryError = unknown
+
+/**
+ * @summary Get Redis Stats
+ */
+export const useGetRedisStatus = <TError = unknown>(
+   options?: { swr?:SWRConfiguration<Awaited<ReturnType<typeof getRedisStatus>>, TError> & { swrKey?: Key, enabled?: boolean }, request?: SecondParameter<typeof customFetch> }
+) => {
+  const {swr: swrOptions, request: requestOptions} = options ?? {}
+
+  const isEnabled = swrOptions?.enabled !== false
+  const swrKey = swrOptions?.swrKey ?? (() => isEnabled ? getGetRedisStatusKey() : null);
+  const swrFn = () => getRedisStatus(requestOptions)
+
+  const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(swrKey, swrFn, swrOptions)
 
   return {
     swrKey,

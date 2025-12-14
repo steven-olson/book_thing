@@ -17,11 +17,15 @@ export const customFetch = async <T>(
     throw new Error(error.detail || `HTTP ${response.status}`);
   }
 
-  if (response.status === 204) {
-    return {} as T;
-  }
+  const data =
+    response.status === 204 ? undefined : await response.json();
 
-  return response.json();
+  // Return in the format Orval expects: { data, status, headers }
+  return {
+    data,
+    status: response.status,
+    headers: response.headers,
+  } as T;
 };
 
 export default customFetch;

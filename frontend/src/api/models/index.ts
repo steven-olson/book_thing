@@ -6,7 +6,22 @@
  * OpenAPI spec version: 0.1.0
  */
 
+export * from './celeryQueueInfo';
+export * from './celeryTaskInfo';
 export * from './hTTPValidationError';
+export * from './redisCeleryInfo';
+export * from './redisClientsInfo';
+export * from './redisKeyInfo';
+export * from './redisKeysInfo';
+export * from './redisMemoryInfo';
+export * from './redisServerInfo';
+export * from './redisStatus';
+export * from './redisStatusCelery';
+export * from './redisStatusClients';
+export * from './redisStatusError';
+export * from './redisStatusKeys';
+export * from './redisStatusMemory';
+export * from './redisStatusServer';
 export * from './triggerHelloTaskTasksHelloPostParams';
 export * from './validationError';
 export * from './validationErrorLocItem';

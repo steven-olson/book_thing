@@ -28,8 +28,21 @@ class RedisKeysInfo(BaseModel):
     keys: list[RedisKeyInfo]
 
 
+class CeleryTaskInfo(BaseModel):
+    name: str
+    queue: str
+
+
+class CeleryQueueInfo(BaseModel):
+    name: str
+    length: int
+    tasks: list[str]
+
+
 class RedisCeleryInfo(BaseModel):
-    queue_length: int
+    default_queue: str
+    queues: list[CeleryQueueInfo]
+    registered_tasks: list[CeleryTaskInfo]
 
 
 class RedisStatus(BaseModel):
@@ -92,8 +105,47 @@ def get_redis_status() -> RedisStatus:
             keys=key_infos,
         )
 
+        # Get Celery task and queue information
+        from task_api.celery_app import celery_app
+
+        default_queue = celery_app.conf.task_default_queue or "celery"
+
+        # Get registered tasks and their queues
+        registered_tasks: list[CeleryTaskInfo] = []
+        task_queues: dict[str, list[str]] = {}
+
+        for task_name, task in celery_app.tasks.items():
+            # Skip built-in celery tasks
+            if task_name.startswith("celery."):
+                continue
+
+            # Get the queue for this task (from task options or default)
+            task_queue = getattr(task, "queue", None) or default_queue
+            registered_tasks.append(
+                CeleryTaskInfo(name=task_name, queue=task_queue)
+            )
+
+            # Group tasks by queue
+            if task_queue not in task_queues:
+                task_queues[task_queue] = []
+            task_queues[task_queue].append(task_name)
+
+        # Get queue lengths from Redis
+        queues: list[CeleryQueueInfo] = []
+        for queue_name, queue_tasks in task_queues.items():
+            queue_length = client.llen(queue_name)
+            queues.append(
+                CeleryQueueInfo(
+                    name=queue_name,
+                    length=queue_length,
+                    tasks=queue_tasks,
+                )
+            )
+
         status.celery = RedisCeleryInfo(
-            queue_length=client.llen("celery"),
+            default_queue=default_queue,
+            queues=queues,
+            registered_tasks=registered_tasks,
         )
 
     except redis.ConnectionError as e:
